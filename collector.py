@@ -35,7 +35,7 @@ while running:
       try:
          for i in x.body.split():
             j = i.encode('utf-8').strip()
-            print j
+            #print j
             if j in dict:
                print "already in"
                dict[j] += 1
