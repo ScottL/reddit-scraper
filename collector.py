@@ -9,7 +9,7 @@ import os
 def extract():
    b = os.path.getsize("out.txt")
    useragent = "corpusbuilder/1.0 by scott"
-   cache = deque(maxlen = 350)
+   cache = deque(maxlen = 500)
 
    r = praw.Reddit(user_agent=useragent)
    running = True
@@ -25,13 +25,11 @@ def extract():
    punc = ['?','!',',','.',':','"',';','(',')','[',']']
 
    while running:
-      allcomments = r.get_comments('all', limit = 340)
+      allcomments = r.get_comments('all', limit = 400)
       print "retrieved comments"
       for x in allcomments:
          if x.id in cache:
             print "IN CACHE"
-            print "Sleeping"
-            sleep(30)
             break
          cache.append(x.id)
 
@@ -40,10 +38,10 @@ def extract():
                j = i.encode('utf-8').strip()
                #print j
                if j in dict:
-                  print "already in"
+                  #print "already in"
                   dict[j] += 1
                else:
-                  print "adding"
+                  #print "adding"
                   dict[j] = 1
          except Exception, e:
             print "ERROR: ", e
@@ -52,13 +50,24 @@ def extract():
 
       
       sortD = sorted(dict.iteritems(), key=itemgetter(1), reverse=True)
-      print sortD
-      open('out.txt','w').close()
-      json.dump(sortD, open("out.txt",'w'))
+      #print sortD
+      formatPrint(sortD)
+      #open('out.txt','w').close()
+      #json.dump(sortD, open("out.txt",'w'))
+      formatOutput(sortD)
+      print "Sleeping"
+      sleep(30)
 
-
-def formateprint(dictionary):
+def formatPrint(dictionary):
    print "temp"
+   for key,value in dictionary:
+      print key, value
+
+
+def formatOutput(dictionary):
+   f =open('out.txt', 'w')
+   for key,value in dictionary:
+      f.write(str(key) + '\t' + str(value) + '\n')
 
 
 
