@@ -5,29 +5,20 @@ from operator import itemgetter
 import json
 import os
 
+FILENAME = "out.txt"
 
 def extract():
-   b = os.path.getsize("out.txt")
    useragent = "corpusbuilder/1.0 by scott"
    cache = deque(maxlen = 1000)
-
    r = praw.Reddit(user_agent=useragent)
    running = True
-
    dict = {}
-   if b == 0:
-      dict = {}
-      print "Empty file"
-   else:
-      #dict= json.load(open("out.txt"))
-      #dict = [s.encode('utf-8') for s,t in dict]
-      dict = formatInput()
-      print "Populated file"
+   dict = initialDictionary(FILENAME)
 
    punc = ['?','!',',','.',':','"',';','(',')','[',']']
 
    while running:
-      allcomments = r.get_comments('all', limit = 950)
+      allcomments = r.get_comments('all', limit = 600)
       print "retrieved comments"
       wordCount = 0
       commentCount = 0
@@ -54,34 +45,51 @@ def extract():
       print "Parsed ", commentCount, " new comments"
       print "Added ", wordCount, " new word counts"      
       print "Wrote to file"
-      sortD = sorted(dict.iteritems(), key=itemgetter(1), reverse=True)
+      sortDict = sorted(dict.iteritems(), key=itemgetter(1), reverse=True)
       #formatPrint(sortD)
-      formatOutput(sortD)
+      writeDictionary(sortDict, FILENAME)
       #open('out.txt','w').close()
       #json.dump(sortD, open("out.txt",'w'))
       print "Sleeping\n\n"
       sleep(45)
 
 
+# Testing purposes. pretty print dictionary
 def formatPrint(dictionary):
    print "temp"
    for key,value in dictionary:
       print key, value
 
 
-def formatOutput(dictionary):
-   f =open('out.txt', 'w')
+# Write dictionary to file
+def writeDictionary(dictionary, filename):
+   f =open(filename, 'w')
    for key,value in dictionary:
       f.write(str(key) + '\t' + str(value) + '\n')
- 
+   f.close()
 
-def formatInput():
-   read =open('out.txt', 'r')
+# Read dictionary from file
+def readDictionary(filename):
+   read =open(filename, 'r')
    dict = {}
    for line in read:
       pair = line.split()
       dict[pair[0]] = int(pair[1])
-
+   read.close()
    return dict
-   
+
+
+# Initilize dictionary
+def initialDictionary(filename):
+   b = os.path.getsize(filename)
+   dict = {}
+   if b == 0:
+      print "Empty file"
+   else:
+      #dict= json.load(open("out.txt"))
+      #dict = [s.encode('utf-8') for s,t in dict]
+      dict = readDictionary(filename)
+      print "Populated file"
+   return dict
+
 extract()
