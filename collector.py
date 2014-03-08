@@ -5,37 +5,53 @@ from operator import itemgetter
 import json
 import os
 
-FILENAME = "out.txt"
+FILENAME_R = "raw.txt"
+FILENAME_C = "clean.txt"
+
 
 def extract():
    useragent = "corpusbuilder/1.0 by scott"
    cache = deque(maxlen = 1000)
    r = praw.Reddit(user_agent=useragent)
    running = True
+
    dict = {}
-   dict = initialDictionary(FILENAME)
+   dict = initialDictionary(FILENAME_R)
+   cleanDict = {}
+   cleanDict = initialDictionary(FILENAME_C)
 
-   punc = ['?','!',',','.',':','"',';','(',')','[',']']
-
+   punctuation = ['.',',','?','!','/',':','-','[',']','{','}','(',')',';']
+  
    while running:
       allcomments = r.get_comments('all', limit = 800)
       print "retrieved comments"
       wordCount = 0
       commentCount = 0
-      for x in allcomments:
-         if x.id in cache:
+      for content in allcomments:
+         if content.id in cache:
             print "IN CACHE"
             break
-         cache.append(x.id)
+         cache.append(content.id)
          commentCount += 1
 
          try:
-            for i in x.body.split():
-               j = i.encode('utf-8').strip()
-               if j in dict:
-                  dict[j] += 1
+            for i in content.body.split():
+               rawWord = i.encode('utf-8').strip()
+               clean = rawWord
+
+               for sym in punctuation:
+                  if sym in rawWord:
+                     clean  = rawWord.replace(sym, "")
+                                   
+               if clean in cleanDict:
+                  cleanDict[clean] += 1
                else:
-                  dict[j] = 1
+                  cleanDict[clean] = 1
+
+               if rawWord in dict:
+                  dict[rawWord] += 1
+               else:
+                  dict[rawWord] = 1
                wordCount += 1
          except Exception, e:
             print "ERROR: ", e
@@ -44,12 +60,12 @@ def extract():
 
       print "Parsed ", commentCount, " new comments"
       print "Added ", wordCount, " new word counts"      
-      print "Wrote to file"
       sortDict = sorted(dict.iteritems(), key=itemgetter(1), reverse=True)
-      #formatPrint(sortD)
-      writeDictionary(sortDict, FILENAME)
-      #open('out.txt','w').close()
-      #json.dump(sortD, open("out.txt",'w'))
+      sortcleanDict = sorted(cleanDict.iteritems(), key=itemgetter(1), reverse=True)
+      writeDictionary(sortDict, FILENAME_R)
+      writeDictionary(sortcleanDict, FILENAME_C)
+      
+      print "Wrote to file"
       print "Sleeping\n\n"
       sleep(50)
 
@@ -91,5 +107,8 @@ def initialDictionary(filename):
       dict = readDictionary(filename)
       print "Populated file"
    return dict
+
+   
+      
 
 extract()
