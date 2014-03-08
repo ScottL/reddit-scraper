@@ -18,7 +18,7 @@ def extract():
    punc = ['?','!',',','.',':','"',';','(',')','[',']']
 
    while running:
-      allcomments = r.get_comments('all', limit = 600)
+      allcomments = r.get_comments('all', limit = 800)
       print "retrieved comments"
       wordCount = 0
       commentCount = 0
@@ -51,7 +51,7 @@ def extract():
       #open('out.txt','w').close()
       #json.dump(sortD, open("out.txt",'w'))
       print "Sleeping\n\n"
-      sleep(45)
+      sleep(50)
 
 
 # Testing purposes. pretty print dictionary
